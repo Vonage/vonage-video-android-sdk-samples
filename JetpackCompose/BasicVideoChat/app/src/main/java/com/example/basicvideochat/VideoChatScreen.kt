@@ -39,9 +39,8 @@ fun VideoChatScreen(
             )
         }
 
-
         publisherView?.let { view ->
-            // Publisher picture-in-picture
+            // Publisher view
             AndroidView(
                 factory = { view },
                 modifier = Modifier

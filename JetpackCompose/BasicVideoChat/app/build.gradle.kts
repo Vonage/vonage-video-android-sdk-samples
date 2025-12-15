@@ -58,5 +58,5 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation("com.vonage:client-sdk-video:2.31.0")
+    implementation(libs.vonage.video)
 }
