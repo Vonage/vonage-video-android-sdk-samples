@@ -39,11 +39,11 @@ fun VideoChatScreen(
 
 
         publisherView?.let { view ->
-            // Publisher picture-in-picture
+            // Publisher view
             AndroidView(
                 factory = { view },
                 modifier = Modifier
-                    .size(width = 300.dp, height = 600.dp)
+                    .size(width = 90.dp, height = 120.dp)
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
                     .background(androidx.compose.ui.graphics.Color.LightGray)
