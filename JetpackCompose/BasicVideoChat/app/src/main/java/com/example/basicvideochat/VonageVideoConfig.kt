@@ -1,4 +1,4 @@
-package com.example.basicvideorenderer
+package com.example.basicvideochat
 
 object VonageVideoConfig {
     // Replace with your Vonage Video APP ID

@@ -1,4 +1,4 @@
-package com.example.basicvideorenderer
+package com.example.basicvideochat
 
 import android.view.View
 import androidx.compose.foundation.background
@@ -10,8 +10,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+
 
 @Composable
 fun VideoChatScreen(
@@ -37,7 +39,6 @@ fun VideoChatScreen(
             )
         }
 
-
         publisherView?.let { view ->
             // Publisher view
             AndroidView(
@@ -46,7 +47,7 @@ fun VideoChatScreen(
                     .size(width = 90.dp, height = 120.dp)
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
-                    .background(androidx.compose.ui.graphics.Color.LightGray)
+                    .background(Color.LightGray)
             )
         }
     }
