@@ -61,7 +61,7 @@ fun VideoChatPermissionWrapper(
             }
         }
 
-        // Optional: Auto-launch the popup on the very first composition
+        // Auto-launch the popup on the very first composition
         LaunchedEffect(Unit) {
             if (!permissionsState.allPermissionsGranted) {
                 permissionsState.launchMultiplePermissionRequest()
