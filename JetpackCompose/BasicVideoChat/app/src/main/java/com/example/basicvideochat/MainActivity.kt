@@ -1,19 +1,14 @@
 package com.example.basicvideochat
-import android.Manifest
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
-import androidx.core.content.ContextCompat
 import com.opentok.android.BaseVideoRenderer
 import com.opentok.android.OpentokError
 import com.opentok.android.Publisher
@@ -34,31 +29,6 @@ class MainActivity : ComponentActivity() {
         private const val TAG = "MainActivity"
     }
 
-    // --- Permissions ---
-    private val REQUIRED_PERMISSIONS = arrayOf(
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO
-    )
-
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val allGranted = permissions.values.all { it }
-        if (allGranted) {
-            initializeSession(
-                appId = VonageVideoConfig.APP_ID,
-                sessionId = VonageVideoConfig.SESSION_ID,
-                token = VonageVideoConfig.TOKEN
-            )
-        } else {
-            Toast.makeText(
-                this,
-                "Camera and microphone permissions are required to make video calls.",
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
     // --- OpenTok session and video variables ---
     private var session: Session? = null
     private var publisher: Publisher? = null
@@ -74,13 +44,21 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            VideoChatScreen(
-                publisherView = publisherView,
-                subscriberView = subscriberView
-            )
+            VideoChatPermissionWrapper(
+                onPermissionsGranted = {
+                    initializeSession(
+                        appId = VonageVideoConfig.APP_ID,
+                        sessionId = VonageVideoConfig.SESSION_ID,
+                        token = VonageVideoConfig.TOKEN
+                    )
+                }
+            ) {
+                VideoChatScreen(
+                    publisherView = publisherView,
+                    subscriberView = subscriberView
+                )
+            }
         }
-
-        requestPermissions()
     }
 
     override fun onPause() {
@@ -92,24 +70,6 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         session?.onResume()
     }
-
-    // --- Permissions Helpers ---
-    private fun requestPermissions() {
-        if (hasPermissions()) {
-            initializeSession(
-                appId = VonageVideoConfig.APP_ID,
-                sessionId = VonageVideoConfig.SESSION_ID,
-                token = VonageVideoConfig.TOKEN
-            )
-        } else {
-            requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
-        }
-    }
-
-    private fun hasPermissions(): Boolean =
-        REQUIRED_PERMISSIONS.all {
-            ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
-        }
 
     // --- Vonage Session Initialization ---
     private fun initializeSession(appId: String, sessionId: String, token: String) {
