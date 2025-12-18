@@ -41,10 +41,10 @@ android {
     }
 }
 
-def extOpentokSdkVersion = ext.extOpentokSdkVersion
+def extVonageSdkVersion = ext.extVonageSdkVersion
 
 dependencies {
-    implementation "com.opentok.android:opentok-android-sdk:${extOpentokSdkVersion}"
+    implementation "com.vonage:client-sdk-video:${extVonageSdkVersion}"
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
