@@ -9,7 +9,9 @@ The Android projects in this directory demonstrate typical use cases and feature
 You can find various sample apps written with `Jetpack Compose` & `XML` based layout, that demonstrate the Vonage Android SDK features:
 
 ### Jetpack Compose
-- **Basic-Video-Renderer** demonstrates how to create a custom video renderer
+- **Basic Video Chat** demonstrates how to publish and subscribe to streams in a session. *Best place to start*
+- **Basic Video Renderer** demonstrates how to create a custom video renderer.
+- **Custom Audio Driver** demonstrates how to publish a random audio signal and save audio streams to the file.
 
 ### XML layout
 - **Basic-Video-Chat** demonstrates how to publish and subscribe to streams in a session. Best place to start
