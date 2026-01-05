@@ -1,7 +1,4 @@
 package com.example.basicvideorenderer
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.compose.ui.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -9,36 +6,19 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
-import com.example.basicvideorenderer.ui.theme.BasicVideoRendererTheme
+import com.example.basicvideorenderer.VonageVideoConfig.description
+import com.example.basicvideorenderer.VonageVideoConfig.isValid
 import com.opentok.android.BaseVideoRenderer
 import com.opentok.android.OpentokError
 import com.opentok.android.Publisher
 import com.opentok.android.PublisherKit
-
 import com.opentok.android.Session;
 import com.opentok.android.Stream
 import com.opentok.android.Subscriber
 import com.opentok.android.SubscriberKit
-
 
 /**
  * MainActivity - Entry point for the Vonage video renderer example.
@@ -49,32 +29,7 @@ class MainActivity : ComponentActivity() {
         private const val TAG = "MainActivity"
     }
 
-    // --- Permissions ---
-    private val REQUIRED_PERMISSIONS = arrayOf(
-        Manifest.permission.CAMERA,
-        Manifest.permission.RECORD_AUDIO
-    )
-
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        val allGranted = permissions.values.all { it }
-        if (allGranted) {
-            initializeSession(
-                appId = VonageVideoConfig.APP_ID,
-                sessionId = VonageVideoConfig.SESSION_ID,
-                token = VonageVideoConfig.TOKEN
-            )
-        } else {
-            Toast.makeText(
-                this,
-                "Camera and microphone permissions are required to make video calls.",
-                Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-
-    // --- OpenTok session and video variables ---
+    // --- Session and video variables ---
     private var session: Session? = null
     private var publisher: Publisher? = null
     private var subscriber: Subscriber? = null
@@ -86,16 +41,29 @@ class MainActivity : ComponentActivity() {
     // --- Lifecycle ---
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!isValid) {
+            finishWithMessage("Check your VonageVideoConfig properties. $description")
+            return
+        }
+
         enableEdgeToEdge()
 
         setContent {
-            VideoChatScreen(
-                publisherView = publisherView,
-                subscriberView = subscriberView
-            )
+            VideoChatPermissionWrapper(
+                onPermissionsGranted = {
+                    initializeSession(
+                        appId = VonageVideoConfig.APP_ID,
+                        sessionId = VonageVideoConfig.SESSION_ID,
+                        token = VonageVideoConfig.TOKEN
+                    )
+                }
+            ) {
+                VideoChatScreen(
+                    publisherView = publisherView,
+                    subscriberView = subscriberView
+                )
+            }
         }
-
-        requestPermissions()
     }
 
     override fun onPause() {
@@ -108,24 +76,6 @@ class MainActivity : ComponentActivity() {
         session?.onResume()
     }
 
-    // --- Permissions Helpers ---
-    private fun requestPermissions() {
-        if (hasPermissions()) {
-            initializeSession(
-                appId = VonageVideoConfig.APP_ID,
-                sessionId = VonageVideoConfig.SESSION_ID,
-                token = VonageVideoConfig.TOKEN
-            )
-        } else {
-            requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
-        }
-    }
-
-    private fun hasPermissions(): Boolean =
-        REQUIRED_PERMISSIONS.all {
-            ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
-        }
-
     // --- Vonage Session Initialization ---
     private fun initializeSession(appId: String, sessionId: String, token: String) {
         Log.i(TAG, "Initializing session with appId=$appId")
@@ -135,7 +85,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // --- OpenTok Session Listener ---
+    // --- Session Listener ---
     private val sessionListener = object : Session.SessionListener {
         override fun onConnected(session: Session) {
             Log.d(TAG, "Connected to session: ${session.sessionId}")
@@ -221,5 +171,10 @@ class MainActivity : ComponentActivity() {
         override fun onError(subscriberKit: SubscriberKit, opentokError: OpentokError) {
             Log.e(TAG, "Subscriber error: ${opentokError.message}")
         }
+    }
+
+    private fun finishWithMessage(message: String) {
+        Log.e(com.example.basicvideorenderer.MainActivity.Companion.TAG, message)
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 }
