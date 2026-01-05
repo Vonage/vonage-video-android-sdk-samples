@@ -2,12 +2,15 @@ package com.example.basicvideochat
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.basicvideochat.VonageVideoConfig.description
+import com.example.basicvideochat.VonageVideoConfig.isValid
 
 import com.opentok.android.BaseVideoRenderer
 import com.opentok.android.OpentokError
@@ -29,7 +32,7 @@ class MainActivity : ComponentActivity() {
         private const val TAG = "MainActivity"
     }
 
-    // --- OpenTok session and video variables ---
+    // --- session and video variables ---
     private var session: Session? = null
     private var publisher: Publisher? = null
     private var subscriber: Subscriber? = null
@@ -41,6 +44,11 @@ class MainActivity : ComponentActivity() {
     // --- Lifecycle ---
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!isValid) {
+            finishWithMessage("Check your VonageVideoConfig properties. $description")
+            return
+        }
+
         enableEdgeToEdge()
 
         setContent {
@@ -80,7 +88,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // --- OpenTok Session Listener ---
+    // --- Session Listener ---
     private val sessionListener = object : Session.SessionListener {
         override fun onConnected(session: Session) {
             Log.d(TAG, "Connected to session: ${session.sessionId}")
@@ -160,5 +168,10 @@ class MainActivity : ComponentActivity() {
         override fun onError(subscriberKit: SubscriberKit, opentokError: OpentokError) {
             Log.e(TAG, "Subscriber error: ${opentokError.message}")
         }
+    }
+
+    private fun finishWithMessage(message: String) {
+        Log.e(com.example.basicvideochat.MainActivity.Companion.TAG, message)
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 }
