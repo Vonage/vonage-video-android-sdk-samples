@@ -117,10 +117,7 @@ class MainActivity : ComponentActivity() {
                     .renderer(InvertedColorsVideoRenderer(this@MainActivity))
                     .build()
                     .apply {
-                        renderer.setStyle(
-                           BaseVideoRenderer.STYLE_VIDEO_SCALE,
-                            BaseVideoRenderer.STYLE_VIDEO_FILL
-                        )
+                       
                         setSubscriberListener(subscriberListener)
                     }
 
