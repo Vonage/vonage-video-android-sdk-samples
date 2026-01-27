@@ -21,7 +21,7 @@ import com.opentok.android.Subscriber
 import com.opentok.android.SubscriberKit
 
 /**
- * MainActivity - Entry point for the Vonage video renderer example.
+ * MainActivity - Entry point for the Vonage video capturer example.
  */
 class MainActivity : ComponentActivity() {
 
