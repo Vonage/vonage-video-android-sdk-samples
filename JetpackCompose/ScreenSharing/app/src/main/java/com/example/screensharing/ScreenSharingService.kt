@@ -1,55 +1,76 @@
 package com.example.screensharing
-
-import android.content.ComponentName
-import android.content.Context
+import com.example.screensharing.R
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
 import android.content.Intent
-import android.content.ServiceConnection
+import android.content.pm.ServiceInfo
+import android.os.Binder
+import android.os.Build
 import android.os.IBinder
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
 
-class ScreenSharingManager(private val context: Context) {
+class ScreenSharingService : Service() {
 
-    private var service: ScreenSharingService? = null
-    var currentState: State = State.UNBIND_SERVICE
-        private set
+    private var notification: Notification? = null
 
-    private val connection = object : ServiceConnection {
-        override fun onServiceConnected(className: ComponentName, binder: IBinder) {
-            val localBinder = binder as ScreenSharingService.LocalBinder
-            service = localBinder.getService()
-            currentState = State.BIND_SERVICE
+    private val binder = LocalBinder()
+
+    inner class LocalBinder : Binder() {
+        fun getService(): ScreenSharingService = this@ScreenSharingService
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+        notification = createNotification()
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Screen Sharing",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
         }
-
-        override fun onServiceDisconnected(arg0: ComponentName) {}
     }
 
-    init {
-        bindService()
+    private fun createNotification(): Notification {
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Screen Sharing")
+            .setContentText("Screen sharing is active")
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
     }
 
-    private fun bindService() {
-        val intent = Intent(context, ScreenSharingService::class.java)
-        context.bindService(intent, connection, Context.BIND_AUTO_CREATE)
+    @RequiresApi(Build.VERSION_CODES.Q)
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        notification?.let {
+            startForeground(NOTIFICATION_ID, it, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION)
+        }
+        return START_NOT_STICKY
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     fun startForeground() {
-        service?.startForeground()
-        currentState = State.START_FOREGROUND
+        notification?.let {
+            startForeground(NOTIFICATION_ID, it, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PROJECTION)
+        }
     }
 
     fun endForeground() {
-        service?.endForeground()
-        currentState = State.END_FOREGROUND
+        stopForeground(STOP_FOREGROUND_REMOVE)
     }
 
-    fun unbindService() {
-        context.unbindService(connection)
-        currentState = State.UNBIND_SERVICE
-    }
+    override fun onBind(intent: Intent?): IBinder = binder
 
-    enum class State {
-        BIND_SERVICE,
-        START_FOREGROUND,
-        END_FOREGROUND,
-        UNBIND_SERVICE
+    companion object {
+        private const val CHANNEL_ID = "screen_capture"
+        private const val NOTIFICATION_ID = 123
     }
 }
