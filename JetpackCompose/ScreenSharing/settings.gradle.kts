@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "BasicVideoCapturer"
+rootProject.name = "ScreenSharing"
 include(":app")
