@@ -1,11 +1,18 @@
 package com.example.screensharing
+import android.content.Context
+import android.content.Intent
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -37,6 +44,46 @@ class MainActivity : ComponentActivity() {
     // Views observed by Compose
     private var publisherView by mutableStateOf<View?>(null)
     private var subscriberView by mutableStateOf<View?>(null)
+
+    private lateinit var screenSharingManager: ScreenSharingManager
+    private var mediaProjectionManager: MediaProjectionManager? = null
+    private var mediaProjection: MediaProjection? = null
+
+    private val screenCaptureLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode != RESULT_OK || result.data == null) {
+            Toast.makeText(
+                this,
+                getString(R.string.screen_capture_permission_not_granted),
+                Toast.LENGTH_LONG
+            ).show()
+            return@registerForActivityResult
+        }
+        result.data?.let { data -> startScreenCapture(result.resultCode, data) }
+    }
+
+    private fun startScreenCapture(resultCode: Int, data: Intent) {
+        screenSharingManager.startForeground()
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            val projectionManager = mediaProjectionManager ?: return@postDelayed
+            mediaProjection = projectionManager.getMediaProjection(resultCode, data)
+            val capturer = ScreenSharingCapturer(this, mediaProjection!!)
+
+            publisher = Publisher.Builder(this)
+                .capturer(capturer)
+                .build()
+                .apply {
+                    setPublisherListener(publisherListener)
+                    setPublisherVideoType(PublisherKit.PublisherKitVideoType.PublisherKitVideoTypeScreen)
+                    setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL)
+                }
+
+            publisherView = publisher?.view
+            session?.publish(publisher)
+        }, 100)
+    }
 
     // --- Lifecycle ---
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -76,6 +123,14 @@ class MainActivity : ComponentActivity() {
         session?.onResume()
     }
 
+    private fun requestScreenCapturePermission() {
+        Log.d(TAG, "Requesting permission to capture screen")
+        mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+        mediaProjectionManager?.createScreenCaptureIntent()?.let { intent ->
+            screenCaptureLauncher.launch(intent)
+        }
+    }
+
     // --- Vonage Session Initialization ---
     private fun initializeSession(appId: String, sessionId: String, token: String) {
         Log.i(TAG, "Initializing session with appId=$appId")
@@ -89,26 +144,7 @@ class MainActivity : ComponentActivity() {
     private val sessionListener = object : Session.SessionListener {
         override fun onConnected(session: Session) {
             Log.d(TAG, "Connected to session: ${session.sessionId}")
-
-            publisher = Publisher.Builder(this@MainActivity)
-                .capturer(
-                    MirrorVideoCapturer(
-                        this@MainActivity,
-                        Publisher.CameraCaptureResolution.HIGH,
-                        Publisher.CameraCaptureFrameRate.FPS_30
-                    )
-                )
-                .build()
-                .apply {
-                    setPublisherListener(publisherListener)
-                    renderer.setStyle(
-                        BaseVideoRenderer.STYLE_VIDEO_SCALE,
-                        BaseVideoRenderer.STYLE_VIDEO_FILL
-                    )
-                }
-
-            publisherView = publisher?.view
-            session.publish(publisher)
+            requestScreenCapturePermission()
         }
 
         override fun onDisconnected(session: Session) {
