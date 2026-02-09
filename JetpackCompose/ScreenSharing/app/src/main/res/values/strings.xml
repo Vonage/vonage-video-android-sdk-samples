@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">BasicVideoCapturer</string>
+    <string name="app_name">ScreenSharing</string>
+    <string name="screen_capture_permission_not_granted">Screen capture permission was not granted</string>
 </resources>
