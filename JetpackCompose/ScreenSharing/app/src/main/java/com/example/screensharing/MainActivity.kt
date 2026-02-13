@@ -92,6 +92,8 @@ class MainActivity : ComponentActivity() {
             finishWithMessage("Check your VonageVideoConfig properties. $description")
             return
         }
+        
+        screenSharingManager = ScreenSharingManager(this)
 
         enableEdgeToEdge()
 
@@ -121,6 +123,14 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         session?.onResume()
+    }
+
+    override fun onDestroy() {
+        // Ensure we unbind from the service when the Activity is destroyed
+        if (::screenSharingManager.isInitialized) {
+            screenSharingManager.unbindService()
+        }
+        super.onDestroy()
     }
 
     private fun requestScreenCapturePermission() {
