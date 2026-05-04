@@ -1,21 +1,47 @@
 # Simple Multiparty
 
-This tutorial walks through the steps required to make modifications to the video capturer in your Vonage Android application.
+This app shows how to implement a simple video call application with several clients using Kotlin and Jetpack Compose. It demonstrates how to enable/disable audio and video as well as swap the camera.
 
-In this example, the app uses a custom video capturer to mirror a video image. This is done simply to illustrate the basic principals of setting up a custom video capturer.
+---
 
-`MirrorVideoCapturer` is a custom class that extends the `BaseVideoCapturer` class (defined in the `Vonage Android SDK`). The `BaseVideoCapturer` class lets you define a custom video capturer to be used by an `Vonage` publisher:
-    
+## Subscribing to Multiple Streams
+
+The signaling sample subscribed to only one stream. In a multiparty video/audio call, there are multiple streams.
+
 ```kotlin
-publisher = Publisher.Builder(this@MainActivity)
-                .capturer(
-                    MirrorVideoCapturer(
-                        this@MainActivity,
-                        Publisher.CameraCaptureResolution.HIGH,
-                        Publisher.CameraCaptureFrameRate.FPS_30
-                    )
-                )
-                .build()
+override fun onStreamReceived(session: Session, stream: Stream) {
+    val subscriber = Subscriber.Builder(this@MainActivity, stream).build()
+    session.subscribe(subscriber)
+    addSubscriber(subscriber)
+}
+````
+
+This simple multiparty app is able to handle a maximum of four subscribers. Once a new stream is received, the `MainActivity` class creates a new `Subscriber` object and subscribes the `Session` object to it. The subscriber stream is then rendered to the screen.
+
+```kotlin
+private val maxSubscribers = 4
+```
+
+---
+
+## Adding User Interface Controls (Jetpack Compose)
+
+This sample shows how you can add user interface controls for the following:
+
+* Turning a publisher's audio stream on and off
+* Turning a publisher's video stream on and off
+* Swapping the publisher's camera
+
+---
+
+### Toggle Audio
+
+```kotlin
+// onCreate
+onPublisherAudioChanged = { enabled ->
+    publisherAudioEnabled.value = enabled
+    publisher?.publishAudio = enabled
+}
 ```
 
 The getCaptureSettings() method provides settings used by the custom video capturer:
