@@ -98,6 +98,5 @@ The `cycleCamera()` method of a `Publisher` object switches to the next availabl
 
 ## Further Reading
 
-* Review [Basic Video Capturer](../BasicVideoCapturer) project
 * Review [other sample projects](../)
 * Read more about [Vonage Android SDK](https://developer.vonage.com/en/video/client-sdks/android/overview)
