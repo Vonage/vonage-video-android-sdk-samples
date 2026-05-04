@@ -75,26 +75,26 @@ Row(verticalAlignment = Alignment.CenterVertically) {
 }
 ```
 
-The `BaseVideoCapturer.CaptureSetting` class (which defines the capturerSettings property) is defined by the `Vonage Android SDK`. In this sample code, the format of the video capturer is set to use `NV21` as the pixel format, with a specific number of frames per second, a specific height, and a specific width.
+The `onPublisherVideoChanged` function toggles its video on or off.
 
-The `BaseVideoCapturer.startCapture()` method is called when a publisher starts capturing video to be sent as a stream to the Vonage session. This will occur after the `Session.publish(publisher)` method is called:
+---
+
+### Swap Camera
 
 ```kotlin
-override fun startCapture(): Int {
-    Log.d(TAG, "startCapture() enter (cameraState: $cameraState)")
-    val resume = Runnable {
-        initCamera()
-        scheduleStartCapture()
-    }
-    when (cameraState) {
-        CameraState.CLOSING -> executeAfterClosed = resume
-        CameraState.CLOSED -> resume.run()
-        else -> scheduleStartCapture()
-    }
-    Log.d(TAG, "startCapture() exit")
-    return 0
+// onCreate
+onSwapCamera = { publisher?.cycleCamera() }
+```
+
+```kotlin
+Button(onClick = onSwapCamera) {
+    Text("Swap Camera")
 }
 ```
+
+The `cycleCamera()` method of a `Publisher` object switches to the next available camera on the device.
+
+---
 
 ## Further Reading
 
