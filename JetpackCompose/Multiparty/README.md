@@ -44,19 +44,34 @@ onPublisherAudioChanged = { enabled ->
 }
 ```
 
-The getCaptureSettings() method provides settings used by the custom video capturer:
+```kotlin
+Row(verticalAlignment = Alignment.CenterVertically) {
+    Text("Audio")
+    Spacer(modifier = Modifier.size(6.dp))
+    Switch(checked = publisherAudioEnabled, onCheckedChange = onPublisherAudioChanged)
+}
+```
+
+The `onPublisherAudioChanged` function toggles its audio on or off.
+
+---
+
+### Toggle Video
 
 ```kotlin
-override fun getCaptureSettings(): CaptureSettings {
-    val settings = CaptureSettings()
-    settings.fps = desiredFps
-    settings.width = cameraFrame?.width ?: -1
-    settings.height = cameraFrame?.height ?: -1
-    settings.format = NV21
-    settings.expectedDelay = 0
-    settings.mirrorInLocalRender = frameMirrorX
+// onCreate
+onPublisherVideoChanged = { enabled ->
+    publisherVideoEnabled.value = enabled
+    publisher?.publishVideo = enabled
+}
+```
 
-    return settings
+```kotlin
+@Composable
+Row(verticalAlignment = Alignment.CenterVertically) {
+    Text("Video")
+    Spacer(modifier = Modifier.size(6.dp))
+    Switch(checked = publisherVideoEnabled, onCheckedChange = onPublisherVideoChanged)
 }
 ```
 
