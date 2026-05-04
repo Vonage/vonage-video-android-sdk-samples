@@ -1,4 +1,4 @@
-# Custom Video Capturing
+# Simple Multiparty
 
 This tutorial walks through the steps required to make modifications to the video capturer in your Vonage Android application.
 
