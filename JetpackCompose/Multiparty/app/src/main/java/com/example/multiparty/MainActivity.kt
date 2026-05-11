@@ -117,6 +117,7 @@ class MainActivity : ComponentActivity() {
                         SimpleMultipartyScreen(
                             publisherAudioEnabled = publisherAudioEnabled.value,
                             publisherVideoEnabled = publisherVideoEnabled.value,
+                            maxSubscribers = maxSubscribers,
                             subscriberVisible = subscriberVisible,
                             subscriberAudioEnabled = subscriberAudioEnabled,
                             onSwapCamera = { publisher?.cycleCamera() },
@@ -179,7 +180,7 @@ class MainActivity : ComponentActivity() {
         if (index == -1) {
             Toast.makeText(
                 this,
-                "New subscriber ignored. MAX_NUM_SUBSCRIBERS limit reached",
+                "New subscriber ignored, maxSubscribers limit reached",
                 Toast.LENGTH_LONG
             ).show()
             return

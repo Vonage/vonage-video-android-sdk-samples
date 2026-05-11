@@ -2,6 +2,7 @@ package com.example.multiparty
 
 import android.widget.FrameLayout
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -28,6 +32,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 internal fun SimpleMultipartyScreen(
     publisherAudioEnabled: Boolean,
     publisherVideoEnabled: Boolean,
+    maxSubscribers: Int,
     subscriberVisible: List<Boolean>,
     subscriberAudioEnabled: List<Boolean>,
     onSwapCamera: () -> Unit,
@@ -44,37 +49,22 @@ internal fun SimpleMultipartyScreen(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            LazyVerticalGrid(
+                modifier = Modifier.weight(1f),
+                columns = GridCells.Fixed(2),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                userScrollEnabled = false,
+            ) {
+                items(items = (0 until maxSubscribers).toList(), key = { it }) { index ->
                     SubscriberCell(
-                        modifier = Modifier.weight(1f),
-                        visible = subscriberVisible.getOrNull(0) == true,
-                        audioEnabled = subscriberAudioEnabled.getOrNull(0) != false,
-                        onAudioChanged = { onSubscriberAudioChanged(0, it) },
-                        onContainerReady = { onSubscriberContainerReady(0, it) },
-                    )
-                    SubscriberCell(
-                        modifier = Modifier.weight(1f),
-                        visible = subscriberVisible.getOrNull(1) == true,
-                        audioEnabled = subscriberAudioEnabled.getOrNull(1) != false,
-                        onAudioChanged = { onSubscriberAudioChanged(1, it) },
-                        onContainerReady = { onSubscriberContainerReady(1, it) },
-                    )
-                }
-                Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    SubscriberCell(
-                        modifier = Modifier.weight(1f),
-                        visible = subscriberVisible.getOrNull(2) == true,
-                        audioEnabled = subscriberAudioEnabled.getOrNull(2) != false,
-                        onAudioChanged = { onSubscriberAudioChanged(2, it) },
-                        onContainerReady = { onSubscriberContainerReady(2, it) },
-                    )
-                    SubscriberCell(
-                        modifier = Modifier.weight(1f),
-                        visible = subscriberVisible.getOrNull(3) == true,
-                        audioEnabled = subscriberAudioEnabled.getOrNull(3) != false,
-                        onAudioChanged = { onSubscriberAudioChanged(3, it) },
-                        onContainerReady = { onSubscriberContainerReady(3, it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f),
+                        visible = subscriberVisible.getOrNull(index) == true,
+                        audioEnabled = subscriberAudioEnabled.getOrNull(index) != false,
+                        onAudioChanged = { onSubscriberAudioChanged(index, it) },
+                        onContainerReady = { onSubscriberContainerReady(index, it) },
                     )
                 }
             }
