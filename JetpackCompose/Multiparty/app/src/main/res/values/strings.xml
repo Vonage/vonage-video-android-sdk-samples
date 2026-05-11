@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Multiparty</string>
+    <string name="subscriber_limit_message">New subscriber ignored. Maximum number of subscribers reached.</string>
+</resources>
