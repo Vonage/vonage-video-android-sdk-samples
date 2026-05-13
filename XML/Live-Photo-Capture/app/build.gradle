@@ -1,28 +1,23 @@
 plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-}
-
-apply {
-    from '../../commons.gradle'
+    alias(libs.plugins.android.application)
 }
 
 android {
     namespace "com.tokbox.sample.livephotocapture"
-    compileSdkVersion extCompileSdkVersion
+    compileSdk libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {
         applicationId "com.tokbox.sample.livephotocapture"
-        minSdkVersion extMinSdkVersion
-        targetSdkVersion extTargetSdkVersion
-        versionCode extVersionCode
-        versionName extVersionName
+        minSdk libs.versions.minSdk.get().toInteger()
+        targetSdk libs.versions.targetSdk.get().toInteger()
+        versionCode libs.versions.versionCode.get().toInteger()
+        versionName libs.versions.versionName.get()
     }
 
     buildTypes {
         release {
-            minifyEnabled extMinifyEnabled
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -31,14 +26,14 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = '17'
-    }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
-    // Dependency versions are defined in the ../../commons.gradle file
-    implementation "com.vonage:client-sdk-video:${extVonageSdkVersion}"
-    implementation "androidx.appcompat:appcompat:${extAppCompatVersion}"
-    implementation "pub.devrel:easypermissions:${extEasyPermissionsVersion}"
+    implementation libs.vonage.video
+    implementation libs.androidx.appcompat
+    implementation libs.easypermissions
 }
