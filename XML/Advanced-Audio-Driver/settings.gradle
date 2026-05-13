@@ -1,7 +1,4 @@
 pluginManagement {
-    plugins {
-        id 'org.jetbrains.kotlin.android' version '2.2.0'
-    }
     repositories {
         gradlePluginPortal()
         google()
@@ -13,6 +10,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+    }
+    versionCatalogs {
+        libs {
+            from(files("../../gradle/libs.versions.toml"))
+        }
     }
 }
 
