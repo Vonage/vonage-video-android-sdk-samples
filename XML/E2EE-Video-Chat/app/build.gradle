@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
 }
 
 apply {
@@ -22,18 +21,19 @@ android {
     buildTypes {
         release {
             minifyEnabled extMinifyEnabled
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility extJavaVersion
+        targetCompatibility extJavaVersion
     }
 
-    kotlinOptions {
-        jvmTarget = '17'
-    }
+}
+
+kotlin {
+    jvmToolchain(extKotlinJvmTarget.toInteger())
 }
 
 dependencies {

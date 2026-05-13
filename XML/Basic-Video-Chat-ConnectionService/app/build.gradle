@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.dagger.hilt)
     alias(libs.plugins.ksp)
@@ -10,14 +9,14 @@ apply from: '../../commons.gradle'
 
 android {
     namespace 'com.tokbox.sample.basicvideochatconnectionservice'
-    compileSdk 36
+    compileSdkVersion extCompileSdkVersion
 
     defaultConfig {
         applicationId "com.tokbox.sample.basicvideochatconnectionservice"
-        minSdk 24
-        targetSdk 36
-        versionCode 1
-        versionName '1.0'
+        minSdkVersion extMinSdkVersion
+        targetSdkVersion extTargetSdkVersion
+        versionCode extVersionCode
+        versionName extVersionName
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
@@ -28,17 +27,17 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
-    }
-
-    kotlinOptions {
-        jvmTarget = '11'
+        sourceCompatibility extJavaVersion
+        targetCompatibility extJavaVersion
     }
 
     buildFeatures {
         compose true
     }
+}
+
+kotlin {
+    jvmToolchain(extKotlinJvmTarget.toInteger())
 }
 
 def extVonageSdkVersion = ext.extVonageSdkVersion

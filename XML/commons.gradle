@@ -4,14 +4,16 @@ import groovy.io.FileType
 Dependency versions
 */
 ext {
-    extAgpVersion="4.2.1"
-    extCompileSdkVersion=35
+    extAgpVersion="9.2.0"
+    extCompileSdkVersion=37
     extBuildToolsVersion="32.0.0"
     extMinSdkVersion=24
-    extTargetSdkVersion=35
+    extTargetSdkVersion=37
     extVersionCode=1
     extVersionName="1.0"
     extMinifyEnabled=false
+    extJavaVersion=JavaVersion.VERSION_17
+    extKotlinJvmTarget='17'
     extVonageSdkVersion="2.34.0"
     extAppCompatVersion="1.4.1"
     extEasyPermissionsVersion="3.0.0"
