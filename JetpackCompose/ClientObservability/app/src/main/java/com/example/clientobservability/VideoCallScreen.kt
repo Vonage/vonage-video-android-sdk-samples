@@ -1,15 +1,15 @@
 package com.example.clientobservability
 
 import android.graphics.Color
-import android.util.TypedValue
-import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color as ComposeColor
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -25,48 +24,41 @@ import com.opentok.android.SubscriberKit.SubscriberVideoStats
 
 @Composable
 fun VideoCallScreen(
-    onOpenTokContainersReady: (subscriberContainer: View, publisherContainer: View) -> Unit,
+    subscriberView: View?,
+    publisherView: View?,
     videoStats: SubscriberVideoStats? = null,
     modifier: Modifier = Modifier,
 ) {
     Surface(color = MaterialTheme.colorScheme.background) {
         Box(modifier = modifier.fillMaxSize()) {
-            val density = LocalDensity.current
             AndroidView(
                 factory = { ctx ->
-                    val root = FrameLayout(ctx)
-                    val subscriberFrame = FrameLayout(ctx).apply {
-                        layoutParams = FrameLayout.LayoutParams(
-                            FrameLayout.LayoutParams.MATCH_PARENT,
-                            FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout(ctx).apply {
+                        layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT,
                         )
                     }
-                    val marginPx = with(density) { 16.dp.roundToPx() }
-                    val wPx = TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        90f,
-                        ctx.resources.displayMetrics,
-                    ).toInt()
-                    val hPx = TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        120f,
-                        ctx.resources.displayMetrics,
-                    ).toInt()
-                    val publisherFrame = FrameLayout(ctx).apply {
-                        layoutParams = FrameLayout.LayoutParams(wPx, hPx).apply {
-                            gravity = Gravity.BOTTOM or Gravity.END
-                            bottomMargin = marginPx
-                            marginEnd = marginPx
-                        }
+                },
+                update = { container ->
+                    container.setSingleChild(subscriberView)
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+            AndroidView(
+                factory = { ctx ->
+                    FrameLayout(ctx).apply {
                         setBackgroundColor(Color.parseColor("#CCCCCC"))
                         setPadding(2, 2, 2, 2)
                     }
-                    root.addView(subscriberFrame)
-                    root.addView(publisherFrame)
-                    onOpenTokContainersReady(subscriberFrame, publisherFrame)
-                    root
                 },
-                modifier = Modifier.fillMaxSize(),
+                update = { container ->
+                    container.setSingleChild(publisherView)
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .size(90.dp, 120.dp),
             )
             if (videoStats != null) {
                 StatsOverlay(
@@ -78,6 +70,19 @@ fun VideoCallScreen(
             }
         }
     }
+}
+
+private fun ViewGroup.setSingleChild(view: View?) {
+    removeAllViews()
+    if (view == null) return
+    (view.parent as? ViewGroup)?.removeView(view)
+    addView(
+        view,
+        ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT,
+        ),
+    )
 }
 
 @Composable

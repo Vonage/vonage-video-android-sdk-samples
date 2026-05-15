@@ -6,7 +6,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -38,9 +37,8 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var publisherViewContainer: ViewGroup
-    private lateinit var subscriberViewContainer: ViewGroup
-
+    private var publisherView by mutableStateOf<View?>(null)
+    private var subscriberView by mutableStateOf<View?>(null)
     private var latestVideoStats by mutableStateOf<SubscriberVideoStats?>(null)
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -77,7 +75,7 @@ class MainActivity : ComponentActivity() {
                 BaseVideoRenderer.STYLE_VIDEO_SCALE,
                 BaseVideoRenderer.STYLE_VIDEO_FILL,
             )
-            publisherViewContainer.addView(publisher?.view)
+            publisherView = publisher?.view
             if (publisher?.view is GLSurfaceView) {
                 (publisher?.view as GLSurfaceView).setZOrderOnTop(true)
             }
@@ -99,7 +97,7 @@ class MainActivity : ComponentActivity() {
                 subscriber?.setSubscriberListener(subscriberListener)
                 subscriber?.setVideoStatsListener(videoStatsListener)
                 session.subscribe(subscriber)
-                subscriberViewContainer.addView(subscriber?.view)
+                subscriberView = subscriber?.view
             }
         }
 
@@ -107,7 +105,7 @@ class MainActivity : ComponentActivity() {
             Log.d(TAG, "onStreamDropped: Stream Dropped: ${stream.streamId} in session: ${session.sessionId}")
             if (subscriber != null) {
                 subscriber = null
-                subscriberViewContainer.removeAllViews()
+                subscriberView = null
                 latestVideoStats = null
             }
         }
@@ -158,17 +156,13 @@ class MainActivity : ComponentActivity() {
                     onPermissionsGranted = { startSessionConfigFlow() },
                 ) {
                     VideoCallScreen(
-                        onOpenTokContainersReady = ::onOpenTokContainersReady,
+                        subscriberView = subscriberView,
+                        publisherView = publisherView,
                         videoStats = latestVideoStats,
                     )
                 }
             }
         }
-    }
-
-    private fun onOpenTokContainersReady(subscriber: View, publisher: View) {
-        subscriberViewContainer = subscriber as ViewGroup
-        publisherViewContainer = publisher as ViewGroup
     }
 
     override fun onPause() {
