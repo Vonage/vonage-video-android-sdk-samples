@@ -1,4 +1,4 @@
-package com.tokbox.sample.clientobservability.network
+package com.example.clientobservability.network
 
 import com.squareup.moshi.Json
 

@@ -1,4 +1,4 @@
-package com.tokbox.sample.clientobservability
+package com.example.clientobservability
 
 import android.text.TextUtils
 import android.webkit.URLUtil

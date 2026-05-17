@@ -24,8 +24,8 @@ import com.opentok.android.SubscriberKit
 import com.opentok.android.SubscriberKit.SubscriberVideoStats
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.tokbox.sample.clientobservability.network.APIService
-import com.tokbox.sample.clientobservability.network.GetSessionResponse
+import com.example.clientobservability.network.APIService
+import com.example.clientobservability.network.GetSessionResponse
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import okhttp3.logging.HttpLoggingInterceptor.Level
@@ -186,11 +186,11 @@ class MainActivity : ComponentActivity() {
             initRetrofit()
             getSession()
         } else {
-            if (!OpenTokConfig.isValid()) {
-                finishWithMessage("Invalid OpenTokConfig. ${OpenTokConfig.getDescription()}")
+            if (!VonageVideoConfig.isValid) {
+                finishWithMessage("Invalid VonageVideoConfig. ${VonageVideoConfig.description}")
                 return
             }
-            initializeSession(OpenTokConfig.API_KEY, OpenTokConfig.SESSION_ID, OpenTokConfig.TOKEN)
+            initializeSession(VonageVideoConfig.APP_ID, VonageVideoConfig.SESSION_ID, VonageVideoConfig.TOKEN)
         }
     }
 
