@@ -14,9 +14,11 @@ object ServerConfig {
     Note that this application will ignore credentials in the `VonageVideoConfig` file when `CHAT_SERVER_URL` contains a
     valid URL.
     */
-    const val CHAT_SERVER_URL: String = "https://YOURAPPNAME.herokuapp.com"
+    // Leave empty to use VonageVideoConfig. Set to your session server base URL when deployed.
+    const val CHAT_SERVER_URL: String = ""
 
-    fun hasChatServerUrl(): Boolean = !TextUtils.isEmpty(CHAT_SERVER_URL)
+    fun hasChatServerUrl(): Boolean =
+        !TextUtils.isEmpty(CHAT_SERVER_URL) && isValid()
 
     fun isValid(): Boolean {
         if (!(URLUtil.isHttpsUrl(CHAT_SERVER_URL) || URLUtil.isHttpUrl(CHAT_SERVER_URL))) {

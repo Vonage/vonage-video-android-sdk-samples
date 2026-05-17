@@ -180,17 +180,23 @@ class MainActivity : ComponentActivity() {
         sessionConfigRequested = true
         if (ServerConfig.hasChatServerUrl()) {
             if (!ServerConfig.isValid()) {
-                finishWithMessage("Invalid chat server url: ${ServerConfig.CHAT_SERVER_URL}")
+                sessionConfigRequested = false
+                showError("Invalid chat server url: ${ServerConfig.CHAT_SERVER_URL}")
                 return
             }
             initRetrofit()
             getSession()
         } else {
             if (!VonageVideoConfig.isValid) {
-                finishWithMessage("Invalid VonageVideoConfig. ${VonageVideoConfig.description}")
+                sessionConfigRequested = false
+                showError("Invalid VonageVideoConfig. ${VonageVideoConfig.description}")
                 return
             }
-            initializeSession(VonageVideoConfig.APP_ID, VonageVideoConfig.SESSION_ID, VonageVideoConfig.TOKEN)
+            initializeSession(
+                VonageVideoConfig.APP_ID,
+                VonageVideoConfig.SESSION_ID,
+                VonageVideoConfig.TOKEN,
+            )
         }
     }
 
@@ -202,7 +208,11 @@ class MainActivity : ComponentActivity() {
                 val body = response.body()
                 if (!response.isSuccessful || body == null) {
                     runOnUiThread {
-                        finishWithMessage("getSession failed: HTTP ${response.code()}")
+                        sessionConfigRequested = false
+                        showError(
+                            "getSession failed: HTTP ${response.code()}. " +
+                                "Check ServerConfig.CHAT_SERVER_URL or leave it empty to use VonageVideoConfig.",
+                        )
                     }
                     return
                 }
@@ -212,16 +222,19 @@ class MainActivity : ComponentActivity() {
             }
 
             override fun onFailure(call: Call<GetSessionResponse>, t: Throwable) {
-                runOnUiThread { throw RuntimeException(t.message, t) }
+                runOnUiThread {
+                    sessionConfigRequested = false
+                    showError("getSession failed: ${t.message}")
+                }
             }
         })
     }
 
-    private fun initializeSession(apiKey: String, sessionId: String, token: String) {
-        Log.i(TAG, "apiKey: $apiKey")
+    private fun initializeSession(appId: String, sessionId: String, token: String) {
+        Log.i(TAG, "appId: $appId")
         Log.i(TAG, "sessionId: $sessionId")
         Log.i(TAG, "token: $token")
-        session = Session.Builder(this, apiKey, sessionId).build()
+        session = Session.Builder(this, appId, sessionId).build()
         session?.setSessionListener(sessionListener)
         session?.connect(token)
     }
@@ -242,9 +255,13 @@ class MainActivity : ComponentActivity() {
         apiService = retrofit!!.create(APIService::class.java)
     }
 
-    private fun finishWithMessage(message: String) {
+    private fun showError(message: String) {
         Log.e(TAG, message)
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+    }
+
+    private fun finishWithMessage(message: String) {
+        showError(message)
         finish()
     }
 
