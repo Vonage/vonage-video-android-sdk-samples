@@ -1,0 +1,34 @@
+package com.example.clientobservability
+
+import android.text.TextUtils
+import android.webkit.URLUtil
+
+object ServerConfig {
+    /*
+    You can set up a server to provide session information. To quickly set up a pre-made web service, see
+    https://github.com/Vonage/learning-video-php
+
+    After deploying the server open the `ServerConfig` file in this project and configure the `CHAT_SERVER_URL`
+    with your domain to fetch credentials from the server.
+
+    Note that this application will ignore credentials in the `VonageVideoConfig` file when `CHAT_SERVER_URL` contains a
+    valid URL.
+    */
+    // Leave empty to use VonageVideoConfig. Set to your session server base URL when deployed.
+    const val CHAT_SERVER_URL: String = ""
+
+    fun hasChatServerUrl(): Boolean =
+        !TextUtils.isEmpty(CHAT_SERVER_URL) && isValid()
+
+    fun isValid(): Boolean {
+        if (!(URLUtil.isHttpsUrl(CHAT_SERVER_URL) || URLUtil.isHttpUrl(CHAT_SERVER_URL))) {
+            return false
+        }
+        if (!URLUtil.isValidUrl(CHAT_SERVER_URL)) {
+            return false
+        }
+        return true
+    }
+
+    fun getDescription(): String = "ServerConfig. CHAT_SERVER_URL: $CHAT_SERVER_URL"
+}
