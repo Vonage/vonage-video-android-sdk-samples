@@ -10,9 +10,13 @@ You can find various sample apps written with `Jetpack Compose` & `XML` based la
 
 ### Jetpack Compose
 - **Basic Video Chat** demonstrates how to publish and subscribe to streams in a session. *Best place to start*
+- **Basic Video Capturer** demonstrates how to create a custom video capturer using Camera2 class.
 - **Basic Video Renderer** demonstrates how to create a custom video renderer.
+- **Client Observability** demonstrates how to retrieve all system statistics.
 - **Custom Audio Driver** demonstrates how to publish a random audio signal and save audio streams to the file.
-- **Basic Video Capturer** demonstrates how to create a custom video capturer using Camera2 class
+- **Multiparty** demonstrates how to position all the videos in a multiparty session.
+- **Picture In Picture** demonstrates how to use the Picture-in-Picture mode.
+- **Screen Sharing** demonstrates how to publish a screen-sharing video.
 
 ### XML layout
 - **Basic-Video-Chat** demonstrates how to publish and subscribe to streams in a session. Best place to start
