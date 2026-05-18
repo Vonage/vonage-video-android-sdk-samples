@@ -13,6 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.example.clientobservability.VonageVideoConfig.description
+import com.example.clientobservability.VonageVideoConfig.isValid
 import com.opentok.android.BaseVideoRenderer
 import com.opentok.android.OpentokError
 import com.opentok.android.Publisher
@@ -22,18 +24,6 @@ import com.opentok.android.Stream
 import com.opentok.android.Subscriber
 import com.opentok.android.SubscriberKit
 import com.opentok.android.SubscriberKit.SubscriberVideoStats
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import com.example.clientobservability.network.APIService
-import com.example.clientobservability.network.GetSessionResponse
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import okhttp3.logging.HttpLoggingInterceptor.Level
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 
 class MainActivity : ComponentActivity() {
 
@@ -42,14 +32,9 @@ class MainActivity : ComponentActivity() {
     private var latestVideoStats by mutableStateOf<SubscriberVideoStats?>(null)
     private val mainHandler = Handler(Looper.getMainLooper())
 
-    private var retrofit: Retrofit? = null
-    private var apiService: APIService? = null
-
     private var session: Session? = null
     private var publisher: Publisher? = null
     private var subscriber: Subscriber? = null
-
-    private var sessionConfigRequested = false
 
     private val publisherListener = object : PublisherKit.PublisherListener {
         override fun onStreamCreated(publisherKit: PublisherKit, stream: Stream) {
@@ -150,10 +135,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (!isValid) {
+            finishWithMessage("Invalid VonageVideoConfig. $description")
+            return
+        }
+
         setContent {
             MaterialTheme {
                 VideoChatPermissionWrapper(
-                    onPermissionsGranted = { startSessionConfigFlow() },
+                    onPermissionsGranted = {
+                        initializeSession(
+                            VonageVideoConfig.APP_ID,
+                            VonageVideoConfig.SESSION_ID,
+                            VonageVideoConfig.TOKEN,
+                        )
+                    },
                 ) {
                     VideoCallScreen(
                         subscriberView = subscriberView,
@@ -175,62 +172,8 @@ class MainActivity : ComponentActivity() {
         session?.onResume()
     }
 
-    private fun startSessionConfigFlow() {
-        if (sessionConfigRequested || session != null) return
-        sessionConfigRequested = true
-        if (ServerConfig.hasChatServerUrl()) {
-            if (!ServerConfig.isValid()) {
-                sessionConfigRequested = false
-                showError("Invalid chat server url: ${ServerConfig.CHAT_SERVER_URL}")
-                return
-            }
-            initRetrofit()
-            getSession()
-        } else {
-            if (!VonageVideoConfig.isValid) {
-                sessionConfigRequested = false
-                showError("Invalid VonageVideoConfig. ${VonageVideoConfig.description}")
-                return
-            }
-            initializeSession(
-                VonageVideoConfig.APP_ID,
-                VonageVideoConfig.SESSION_ID,
-                VonageVideoConfig.TOKEN,
-            )
-        }
-    }
-
-    private fun getSession() {
-        Log.i(TAG, "getSession")
-        val service = apiService ?: return
-        service.getSession().enqueue(object : Callback<GetSessionResponse> {
-            override fun onResponse(call: Call<GetSessionResponse>, response: Response<GetSessionResponse>) {
-                val body = response.body()
-                if (!response.isSuccessful || body == null) {
-                    runOnUiThread {
-                        sessionConfigRequested = false
-                        showError(
-                            "getSession failed: HTTP ${response.code()}. " +
-                                "Check ServerConfig.CHAT_SERVER_URL or leave it empty to use VonageVideoConfig.",
-                        )
-                    }
-                    return
-                }
-                runOnUiThread {
-                    initializeSession(body.apiKey, body.sessionId, body.token)
-                }
-            }
-
-            override fun onFailure(call: Call<GetSessionResponse>, t: Throwable) {
-                runOnUiThread {
-                    sessionConfigRequested = false
-                    showError("getSession failed: ${t.message}")
-                }
-            }
-        })
-    }
-
     private fun initializeSession(appId: String, sessionId: String, token: String) {
+        if (session != null) return
         Log.i(TAG, "appId: $appId")
         Log.i(TAG, "sessionId: $sessionId")
         Log.i(TAG, "token: $token")
@@ -239,29 +182,9 @@ class MainActivity : ComponentActivity() {
         session?.connect(token)
     }
 
-    private fun initRetrofit() {
-        val logging = HttpLoggingInterceptor().apply { level = Level.BODY }
-        val client = OkHttpClient.Builder()
-            .addInterceptor(logging)
-            .build()
-        val moshi = Moshi.Builder()
-            .addLast(KotlinJsonAdapterFactory())
-            .build()
-        retrofit = Retrofit.Builder()
-            .baseUrl(ServerConfig.CHAT_SERVER_URL)
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .client(client)
-            .build()
-        apiService = retrofit!!.create(APIService::class.java)
-    }
-
-    private fun showError(message: String) {
+    private fun finishWithMessage(message: String) {
         Log.e(TAG, message)
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-    }
-
-    private fun finishWithMessage(message: String) {
-        showError(message)
         finish()
     }
 
