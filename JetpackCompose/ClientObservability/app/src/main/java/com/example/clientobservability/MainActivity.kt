@@ -23,14 +23,14 @@ import com.opentok.android.Session
 import com.opentok.android.Stream
 import com.opentok.android.Subscriber
 import com.opentok.android.SubscriberKit
-import com.opentok.android.SubscriberKit.SubscriberVideoStats
 
 class MainActivity : ComponentActivity() {
 
     private var publisherView by mutableStateOf<View?>(null)
     private var subscriberView by mutableStateOf<View?>(null)
-    private var latestVideoStats by mutableStateOf<SubscriberVideoStats?>(null)
+    private var latestObservabilityStats by mutableStateOf<ObservabilityStats?>(null)
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var latestMediaLinkSnapshot: MediaLinkSnapshot? = null
 
     private var session: Session? = null
     private var publisher: Publisher? = null
@@ -81,6 +81,7 @@ class MainActivity : ComponentActivity() {
                 )
                 subscriber?.setSubscriberListener(subscriberListener)
                 subscriber?.setVideoStatsListener(videoStatsListener)
+                subscriber?.setMediaLinkStatsListener(mediaLinkStatsListener)
                 session.subscribe(subscriber)
                 subscriberView = subscriber?.view
             }
@@ -91,7 +92,8 @@ class MainActivity : ComponentActivity() {
             if (subscriber != null) {
                 subscriber = null
                 subscriberView = null
-                latestVideoStats = null
+                latestObservabilityStats = null
+                latestMediaLinkSnapshot = null
             }
         }
 
@@ -115,22 +117,40 @@ class MainActivity : ComponentActivity() {
     }
 
     private val videoStatsListener = SubscriberKit.VideoStatsListener { _, stats ->
-        Log.d(TAG, "onVideoStats: Data received")
-        Log.d(
-            TAG,
-            "onVideoStats: Sender Stats connectionEstimatedBandwidth" +
-                (stats.senderStats?.connectionEstimatedBandwidth ?: "NULL"),
-        )
-        Log.d(
-            TAG,
-            "onVideoStats: Sender Stats connectionMaxAllocatedBitrate" +
-                (stats.senderStats?.connectionMaxAllocatedBitrate ?: "NULL"),
-        )
-        Log.d(TAG, "onVideoStats: videoBytesReceived${stats.videoBytesReceived}")
-        Log.d(TAG, "onVideoStats: timeStamp${stats.timeStamp}")
-        Log.d(TAG, "onVideoStats: videoPacketsLost${stats.videoPacketsLost}")
-        Log.d(TAG, "onVideoStats: videoPacketsReceived${stats.videoPacketsReceived}")
-        mainHandler.post { latestVideoStats = stats }
+        Log.d(TAG, "onVideoStats: videoBytesReceived=${stats.videoBytesReceived}")
+        Log.d(TAG, "onVideoStats: timeStamp=${stats.timeStamp}")
+        Log.d(TAG, "onVideoStats: videoPacketsLost=${stats.videoPacketsLost}")
+        Log.d(TAG, "onVideoStats: videoPacketsReceived=${stats.videoPacketsReceived}")
+        mainHandler.post {
+            latestObservabilityStats = ObservabilityStats.fromVideoStats(stats, latestMediaLinkSnapshot)
+        }
+    }
+
+    private val mediaLinkStatsListener = object : SubscriberKit.MediaLinkStatsListener {
+        override fun onMediaLinkStats(
+            subscriber: SubscriberKit,
+            mediaLinkStats: SubscriberKit.SubscriberMediaLinkStats,
+        ) {
+            val localBandwidth = mediaLinkStats.transport?.connectionEstimatedBandwidth
+            val remoteBandwidth = mediaLinkStats.remotePublisherTransport?.connectionEstimatedBandwidth
+            Log.d(TAG, "onMediaLinkStats: localEstimatedBandwidth=$localBandwidth")
+            Log.d(TAG, "onMediaLinkStats: remoteEstimatedBandwidth=$remoteBandwidth")
+            Log.d(TAG, "onMediaLinkStats: degradationSource=${mediaLinkStats.networkDegradationSource}")
+            mainHandler.post {
+                latestMediaLinkSnapshot = MediaLinkSnapshot(
+                    localEstimatedBandwidth = localBandwidth,
+                    remoteEstimatedBandwidth = remoteBandwidth,
+                    networkDegradationSource = mediaLinkStats.networkDegradationSource,
+                )
+                latestObservabilityStats?.let { current ->
+                    latestObservabilityStats = current.copy(
+                        localEstimatedBandwidth = localBandwidth,
+                        remoteEstimatedBandwidth = remoteBandwidth,
+                        networkDegradationSource = mediaLinkStats.networkDegradationSource,
+                    )
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -144,18 +164,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme {
                 VideoChatPermissionWrapper(
-                    onPermissionsGranted = {
-                        initializeSession(
-                            VonageVideoConfig.APP_ID,
-                            VonageVideoConfig.SESSION_ID,
-                            VonageVideoConfig.TOKEN,
-                        )
-                    },
+                    onPermissionsGranted = { connectToSession() },
                 ) {
                     VideoCallScreen(
                         subscriberView = subscriberView,
                         publisherView = publisherView,
-                        videoStats = latestVideoStats,
+                        observabilityStats = latestObservabilityStats,
                     )
                 }
             }
@@ -172,14 +186,15 @@ class MainActivity : ComponentActivity() {
         session?.onResume()
     }
 
-    private fun initializeSession(appId: String, sessionId: String, token: String) {
+    private fun connectToSession() {
         if (session != null) return
-        Log.i(TAG, "appId: $appId")
-        Log.i(TAG, "sessionId: $sessionId")
-        Log.i(TAG, "token: $token")
-        session = Session.Builder(this, appId, sessionId).build()
+        session = Session.Builder(
+            this,
+            VonageVideoConfig.APP_ID,
+            VonageVideoConfig.SESSION_ID,
+        ).build()
         session?.setSessionListener(sessionListener)
-        session?.connect(token)
+        session?.connect(VonageVideoConfig.TOKEN)
     }
 
     private fun finishWithMessage(message: String) {
