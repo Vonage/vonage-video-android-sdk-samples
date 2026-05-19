@@ -20,13 +20,12 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.opentok.android.SubscriberKit.SubscriberVideoStats
 
 @Composable
 fun VideoCallScreen(
     subscriberView: View?,
     publisherView: View?,
-    videoStats: SubscriberVideoStats? = null,
+    observabilityStats: ObservabilityStats? = null,
     modifier: Modifier = Modifier,
 ) {
     Surface(color = MaterialTheme.colorScheme.background) {
@@ -60,9 +59,9 @@ fun VideoCallScreen(
                     .padding(16.dp)
                     .size(90.dp, 120.dp),
             )
-            if (videoStats != null) {
+            if (observabilityStats != null) {
                 StatsOverlay(
-                    stats = videoStats,
+                    stats = observabilityStats,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(16.dp),
@@ -87,20 +86,18 @@ private fun ViewGroup.setSingleChild(view: View?) {
 
 @Composable
 private fun StatsOverlay(
-    stats: SubscriberVideoStats,
+    stats: ObservabilityStats,
     modifier: Modifier = Modifier,
 ) {
-    val senderEstBandwidth = stats.senderStats?.connectionEstimatedBandwidth?.toString() ?: "N/A"
-    val senderMaxBitrate = stats.senderStats?.connectionMaxAllocatedBitrate?.toString() ?: "N/A"
-
     Column(
         modifier = modifier
             .background(ComposeColor(0xAA000000))
             .padding(8.dp),
     ) {
         StatRow("Subscriber video stats")
-        StatRow("estBandwidth", senderEstBandwidth)
-        StatRow("maxBitrate", senderMaxBitrate)
+        StatRow("localEstBandwidth", stats.localEstimatedBandwidth?.toString() ?: "N/A")
+        StatRow("remoteEstBandwidth", stats.remoteEstimatedBandwidth?.toString() ?: "N/A")
+        StatRow("degradationSource", stats.networkDegradationSource?.toString() ?: "N/A")
         StatRow("bytesRecv", stats.videoBytesReceived.toString())
         StatRow("pktsLost", stats.videoPacketsLost.toString())
         StatRow("pktsRecv", stats.videoPacketsReceived.toString())

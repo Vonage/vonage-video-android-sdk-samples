@@ -75,6 +75,6 @@ inside the `fragmentShaderCode` String:
 
 ## Further Reading
 
-* Review [Custom Video Driver](../Custom-Video-Driver) projcet
+* Review [Custom Audio Driver](../CustomAudioDriver) project
 * Review [other sample projects](../)
 * Read more about [Vonage Android SDK](https://developer.vonage.com/en/video/client-sdks/android/overview)
