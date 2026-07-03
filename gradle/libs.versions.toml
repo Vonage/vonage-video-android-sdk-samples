@@ -10,7 +10,7 @@ versionCode = "1"
 versionName = "1.0"
 
 # Vonage
-vonageVideo = "2.34.0"
+vonageVideo = "2.34.1"
 
 # AndroidX
 appcompat = "1.4.1"
