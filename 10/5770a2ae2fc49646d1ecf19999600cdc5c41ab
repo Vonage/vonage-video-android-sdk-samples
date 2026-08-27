@@ -1,0 +1,14 @@
+gradle/libs.versions.toml
+  h_63b3605edfc3ba 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "105770a2ae2fc49646d1ecf19999600cdc5c41ab",
+  "prompts": {},
+  "humans": {
+    "h_63b3605edfc3ba": {
+      "author": "Raúl Albín <raul.albin@vonage.com>"
+    }
+  }
+}
