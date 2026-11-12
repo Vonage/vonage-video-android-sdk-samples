@@ -1,0 +1,14 @@
+gradle/libs.versions.toml
+  h_085c352282c611 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e068e55e6f7a3a1c99e061a4b8efdcf600a72b99",
+  "prompts": {},
+  "humans": {
+    "h_085c352282c611": {
+      "author": "chetanvangadi <chetan.angadi@vonage.com>"
+    }
+  }
+}
